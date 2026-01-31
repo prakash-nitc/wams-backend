@@ -1,0 +1,217 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+
+\title{\textbf{Phase 1 Documentation}\\
+Workflow \& Approval Management System (WAMS)}
+\author{Backend Project Setup and Bootstrapping}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1em}
+
+\onehalfspacing
+
+\section{Objective of Phase 1}
+
+The objective of Phase 1 was to establish a clean, professional, and interview-ready backend foundation for the \textbf{Workflow \& Approval Management System (WAMS)} using Java and Spring Boot.
+
+This phase intentionally focused on:
+\begin{itemize}
+  \item Correct environment setup
+  \item Understanding Spring Boot bootstrapping
+  \item Establishing project structure
+  \item Version control discipline
+\end{itemize}
+
+No business logic or database integration was implemented in this phase.
+
+---
+
+\section{Technology Stack}
+
+\begin{itemize}
+  \item \textbf{Language:} Java 17
+  \item \textbf{Framework:} Spring Boot 3.5.10
+  \item \textbf{Build Tool:} Maven (Maven Wrapper)
+  \item \textbf{Version Control:} Git
+  \item \textbf{Repository Hosting:} GitHub
+  \item \textbf{Architecture Style:} Layered Monolith (initial)
+\end{itemize}
+
+---
+
+\section{System Environment Setup}
+
+\subsection{Java Installation}
+
+Java Development Kit (JDK) 17 was installed and configured on the system.  
+The following environment variables were verified:
+
+\begin{itemize}
+  \item \texttt{JAVA\_HOME} pointing to the JDK root directory
+  \item \texttt{PATH} including \texttt{\%JAVA\_HOME\%/bin}
+\end{itemize}
+
+Verification commands:
+\begin{verbatim}
+java -version
+javac -version
+\end{verbatim}
+
+---
+
+\subsection{Maven Usage}
+
+Instead of relying on a system-installed Maven, the project uses the \textbf{Maven Wrapper} (\texttt{mvnw}), ensuring:
+\begin{itemize}
+  \item Build reproducibility
+  \item Tooling consistency across machines
+\end{itemize}
+
+---
+
+\section{Spring Boot Project Initialization}
+
+The project was initialized using Spring Initializr with the following configuration:
+
+\begin{itemize}
+  \item Project Type: Maven
+  \item Packaging: Jar
+  \item Java Version: 17
+  \item Dependencies:
+    \begin{itemize}
+      \item Spring Web
+      \item Spring Data JPA
+      \item MySQL Driver
+    \end{itemize}
+\end{itemize}
+
+At this stage, database connectivity was intentionally deferred.
+
+---
+
+\section{Application Bootstrapping}
+
+The application entry point is defined by the main class:
+
+\begin{verbatim}
+@SpringBootApplication
+public class ArwmsApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ArwmsApplication.class, args);
+    }
+}
+\end{verbatim}
+
+This class is responsible for:
+\begin{itemize}
+  \item Component scanning
+  \item Auto-configuration
+  \item Application context initialization
+\end{itemize}
+
+---
+
+\section{Handling DataSource Auto-Configuration}
+
+Since JPA and a database driver were added as dependencies, Spring Boot attempted to auto-configure a DataSource.
+
+As database integration was not part of Phase 1, auto-configuration was explicitly disabled using:
+
+\begin{verbatim}
+spring.autoconfigure.exclude=
+org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+\end{verbatim}
+
+This ensured:
+\begin{itemize}
+  \item Clean application startup
+  \item Intentional control over when database configuration is introduced
+\end{itemize}
+
+---
+
+\section{Project Naming and Domain Clarification}
+
+Initially, the project followed an academic-specific naming convention.  
+This was later generalized to an industry-oriented system:
+
+\begin{itemize}
+  \item \textbf{Final Project Name:} Workflow \& Approval Management System (WAMS)
+  \item \textbf{Repository Name:} \texttt{wams-backend}
+\end{itemize}
+
+The internal package naming was intentionally left unchanged at this stage to avoid premature refactoring. Domain-specific naming will be introduced alongside entity design in later phases.
+
+---
+
+\section{Version Control Setup}
+
+\subsection{Local Git Initialization}
+
+Git was initialized locally, and a clean commit history was established from the first successful boot.
+
+\begin{verbatim}
+git init
+git add .
+git commit -m "Initial Spring Boot setup and successful startup"
+\end{verbatim}
+
+---
+
+\subsection{Branch Management}
+
+The default branch was renamed to align with modern GitHub conventions:
+
+\begin{verbatim}
+git branch -M main
+\end{verbatim}
+
+---
+
+\subsection{GitHub Integration}
+
+The local repository was connected to GitHub and pushed:
+
+\begin{verbatim}
+git remote add origin <repository-url>
+git push -u origin main
+\end{verbatim}
+
+This established GitHub as the single source of truth for the project.
+
+---
+
+\section{Outcome of Phase 1}
+
+At the end of Phase 1, the project achieved the following:
+
+\begin{itemize}
+  \item A clean, running Spring Boot application
+  \item Verified Java and Maven environment
+  \item Intentional control over auto-configuration
+  \item Professional Git and GitHub workflow
+  \item A stable foundation for domain-driven backend development
+\end{itemize}
+
+---
+
+\section{Next Phase}
+
+Phase 2 will focus on:
+\begin{itemize}
+  \item REST API fundamentals
+  \item Controller layer design
+  \item Request–response flow
+  \item Establishing the first externally visible API of WAMS
+\end{itemize}
+
+\end{document}
