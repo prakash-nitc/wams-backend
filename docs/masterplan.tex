@@ -1,0 +1,273 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+
+\title{\textbf{Execution Plan}\\
+Workflow \& Approval Management System (WAMS)}
+\author{Backend Learning \& Project Roadmap}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1em}
+
+\onehalfspacing
+
+\section{Project Overview}
+
+The \textbf{Workflow \& Approval Management System (WAMS)} is an industry-oriented backend system designed to manage multi-step workflows that require role-based approvals and controlled state transitions.
+
+This project is used as the primary vehicle to learn Java, Spring Boot, and backend engineering fundamentals in a structured, production-aligned manner.
+
+---
+
+\section{Learning Philosophy}
+
+The execution plan follows these principles:
+
+\begin{itemize}
+  \item Fundamentals before complexity
+  \item Monolith first, then evolution
+  \item One concept at a time
+  \item Each phase ends with working code and Git commits
+  \item Buzzwords are introduced only when justified
+\end{itemize}
+
+---
+
+\section{Phase Breakdown}
+
+\subsection{Phase 1 — Foundation and Setup (Completed)}
+
+\textbf{Objective:} Establish a stable backend foundation and development environment.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item Java 17 installation and configuration
+  \item Spring Boot bootstrapping
+  \item Maven wrapper usage
+  \item Git and GitHub setup
+  \item Application auto-configuration understanding
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item Running Spring Boot application
+  \item Clean GitHub repository
+  \item Phase 1 documentation
+\end{itemize}
+
+---
+
+\subsection{Phase 2 — REST API Fundamentals (Controller Layer)}
+
+\textbf{Objective:} Expose the first REST APIs and understand request--response flow.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item HTTP and REST basics
+  \item \texttt{@RestController}
+  \item \texttt{@GetMapping}, \texttt{@PostMapping}
+  \item JSON responses
+\end{itemize}
+
+\textbf{Project Work:}
+\begin{itemize}
+  \item Health check API
+  \item Basic WAMS endpoints
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item APIs accessible via browser/Postman
+  \item Clear understanding of controller responsibility
+\end{itemize}
+
+---
+
+\subsection{Phase 3 — Service Layer and Business Logic}
+
+\textbf{Objective:} Separate business logic from HTTP handling.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item Service layer responsibility
+  \item \texttt{@Service} annotation
+  \item Dependency injection
+  \item Constructor injection
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item Thin controllers
+  \item Centralized business logic
+  \item Interview-ready architecture
+\end{itemize}
+
+---
+
+\subsection{Phase 4 — Database and Persistence (JPA)}
+
+\textbf{Objective:} Persist workflow data using a relational database.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item Relational database fundamentals
+  \item JPA and Hibernate
+  \item Entities and repositories
+  \item Basic CRUD operations
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item Database-backed workflows
+  \item Understanding of ORM behavior
+\end{itemize}
+
+---
+
+\subsection{Phase 5 — DTOs and API Design}
+
+\textbf{Objective:} Design clean and safe API contracts.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item DTO pattern
+  \item Request vs response models
+  \item Basic validation
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item Clean API boundaries
+  \item Production-style API design
+\end{itemize}
+
+---
+
+\subsection{Phase 6 — Exception Handling}
+
+\textbf{Objective:} Handle failures gracefully and consistently.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item Custom exceptions
+  \item Global exception handling
+  \item HTTP status codes
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item Predictable error responses
+  \item Robust backend behavior
+\end{itemize}
+
+---
+
+\subsection{Phase 7 — Core Workflow Logic}
+
+\textbf{Objective:} Implement the heart of WAMS.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item Workflow states
+  \item State transitions
+  \item Approval rules
+  \item Role-based actions
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item Functional workflow engine
+  \item Strong project narrative
+\end{itemize}
+
+---
+
+\subsection{Phase 8 — Security}
+
+\textbf{Objective:} Secure APIs and enforce authorization.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item Authentication vs authorization
+  \item JWT basics
+  \item Role-based access control
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item Secured endpoints
+  \item Role-aware workflow actions
+\end{itemize}
+
+---
+
+\subsection{Phase 9 — Docker}
+
+\textbf{Objective:} Containerize the backend application.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item Docker fundamentals
+  \item Dockerfile creation
+  \item Running containers
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item Dockerized WAMS backend
+\end{itemize}
+
+---
+
+\subsection{Phase 10 — Microservices (Selective)}
+
+\textbf{Objective:} Understand microservices through controlled extraction.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item Service boundaries
+  \item Inter-service communication
+  \item Failure considerations
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item One extracted microservice
+  \item System design clarity
+\end{itemize}
+
+---
+
+\subsection{Phase 11 — Kubernetes}
+
+\textbf{Objective:} Learn orchestration concepts at a practical level.
+
+\textbf{Key Topics:}
+\begin{itemize}
+  \item Pods and services
+  \item Local Kubernetes deployment
+  \item Backend orchestration concepts
+\end{itemize}
+
+\textbf{Outcome:}
+\begin{itemize}
+  \item Container orchestration understanding
+  \item Interview-level Kubernetes confidence
+\end{itemize}
+
+---
+
+\section{Conclusion}
+
+This execution plan ensures a gradual, disciplined progression from backend fundamentals to advanced concepts, resulting in a single, well-engineered, industry-grade project suitable for placements and interviews.
+
+\end{document}
