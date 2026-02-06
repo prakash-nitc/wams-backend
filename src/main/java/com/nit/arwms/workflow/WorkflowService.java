@@ -1,5 +1,9 @@
 package com.nit.arwms.workflow;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,5 +21,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class WorkflowService {
-    // Business logic will be added in subsequent commits
+    
+    // In-memory storage for workflows (will be replaced by database in Phase 4)
+    // These are data concerns, not HTTP concerns - they belong in the service layer
+    private final List<Workflow> workflows = new ArrayList<>();
+    private final AtomicLong idCounter = new AtomicLong(1);
 }
