@@ -26,4 +26,13 @@ public class WorkflowService {
     // These are data concerns, not HTTP concerns - they belong in the service layer
     private final List<Workflow> workflows = new ArrayList<>();
     private final AtomicLong idCounter = new AtomicLong(1);
+
+    /**
+     * Retrieves all workflows in the system.
+     * 
+     * @return List of all workflows
+     */
+    public List<Workflow> getAllWorkflows() {
+        return workflows;
+    }
 }
