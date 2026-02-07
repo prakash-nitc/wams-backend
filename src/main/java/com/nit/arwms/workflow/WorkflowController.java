@@ -1,9 +1,6 @@
 package com.nit.arwms.workflow;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,44 +19,64 @@ import org.springframework.web.bind.annotation.RestController;
  * - @GetMapping and @PostMapping
  * - @PathVariable and @RequestBody
  * - JSON request/response handling
+ * - Constructor injection (Phase 3)
  */
 @RestController
 @RequestMapping("/api/workflows")
 public class WorkflowController {
 
-    // In-memory storage for workflows (will be replaced by database in Phase 4)
-    private final List<Workflow> workflows = new ArrayList<>();
-    private final AtomicLong idCounter = new AtomicLong(1);
+    private final WorkflowService workflowService;
+
+    /**
+     * Constructor Injection - Spring automatically injects WorkflowService.
+     * 
+     * Key Concept: Why Constructor Injection?
+     * ---------------------------------------
+     * 1. Dependencies are EXPLICIT and REQUIRED (compile-time safety)
+     * 2. Fields can be FINAL (immutability)
+     * 3. Easier to TEST (can inject mocks in unit tests)
+     * 4. No reflection magic needed (unlike @Autowired on fields)
+     * 
+     * Note: When there's only ONE constructor, @Autowired is optional.
+     * Spring will automatically use it for dependency injection.
+     */
+    public WorkflowController(WorkflowService workflowService) {
+        this.workflowService = workflowService;
+    }
+
 
     /**
      * GET /api/workflows - List all workflows
+     * 
+     * Thin Controller Pattern: Just delegates to service
      */
     @GetMapping
     public List<Workflow> getAllWorkflows() {
-        return workflows;
+        return workflowService.getAllWorkflows();
     }
 
     /**
      * GET /api/workflows/{id} - Get workflow by ID
+     * 
+     * Thin Controller Pattern: HTTP response handling only,
+     * business logic (finding) is in the service
      */
     @GetMapping("/{id}")
     public ResponseEntity<Workflow> getWorkflowById(@PathVariable Long id) {
-        return workflows.stream()
-                .filter(w -> w.getId().equals(id))
-                .findFirst()
+        return workflowService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     /**
      * POST /api/workflows - Create a new workflow
+     * 
+     * Thin Controller Pattern: Service handles all business logic
+     * (ID assignment, status, timestamp). Controller only handles HTTP.
      */
     @PostMapping
     public ResponseEntity<Workflow> createWorkflow(@RequestBody Workflow workflow) {
-        workflow.setId(idCounter.getAndIncrement());
-        workflow.setStatus("DRAFT");
-        workflow.setCreatedAt(LocalDateTime.now());
-        workflows.add(workflow);
-        return ResponseEntity.status(HttpStatus.CREATED).body(workflow);
+        Workflow created = workflowService.createWorkflow(workflow);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }
