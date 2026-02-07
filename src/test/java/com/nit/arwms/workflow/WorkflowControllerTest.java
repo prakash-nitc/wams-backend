@@ -8,10 +8,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+/**
+ * Integration tests for WorkflowController.
+ * 
+ * Note: @Import(WorkflowService.class) is needed because @WebMvcTest only loads
+ * the controller slice. Since the controller now depends on WorkflowService,
+ * we must explicitly import it into the test context.
+ */
 @WebMvcTest(WorkflowController.class)
+@Import(WorkflowService.class)
 class WorkflowControllerTest {
 
     @Autowired
