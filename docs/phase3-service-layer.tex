@@ -1,0 +1,475 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+
+% Code listing style
+\lstdefinestyle{javastyle}{
+  language=Java,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  stringstyle=\color{orange},
+  commentstyle=\color{gray}\itshape,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!10},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  tabsize=4
+}
+
+\lstset{style=javastyle}
+
+\title{\textbf{Phase 3 Documentation}\\
+Workflow \& Approval Management System (WAMS)}
+\author{Service Layer and Business Logic}
+\date{February 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1em}
+
+\onehalfspacing
+
+\section{Objective of Phase 3}
+
+The objective of Phase 3 was to introduce proper separation of concerns by implementing the \textbf{Service Layer} pattern. This phase focused on:
+
+\begin{itemize}
+  \item Understanding service layer responsibility
+  \item Learning the \texttt{@Service} annotation
+  \item Implementing \textbf{Dependency Injection} via constructor injection
+  \item Refactoring controllers to be "thin" (HTTP handling only)
+  \item Centralizing business logic in a dedicated service class
+\end{itemize}
+
+---
+
+\section{Key Concepts Learned}
+
+\subsection{The Service Layer Pattern}
+
+In enterprise applications, the \textbf{Service Layer} acts as a boundary between the presentation layer (controllers) and the data access layer (repositories). It encapsulates all business logic.
+
+\textbf{Benefits:}
+\begin{itemize}
+  \item \textbf{Separation of Concerns:} Controllers handle HTTP, services handle business rules
+  \item \textbf{Testability:} Services can be unit tested independently of HTTP
+  \item \textbf{Reusability:} Multiple controllers can use the same service
+  \item \textbf{Maintainability:} Changes to business logic are centralized
+\end{itemize}
+
+---
+
+\subsection{The @Service Annotation}
+
+The \texttt{@Service} annotation is a Spring stereotype that marks a class as a service component.
+
+\begin{lstlisting}
+@Service
+public class WorkflowService {
+    // Business logic here
+}
+\end{lstlisting}
+
+\textbf{What @Service does:}
+\begin{itemize}
+  \item Marks the class as a Spring-managed bean
+  \item Spring creates a singleton instance by default
+  \item The bean can be injected into other components
+  \item Semantically indicates "this class contains business logic"
+\end{itemize}
+
+\textbf{Note:} Functionally, \texttt{@Service} is identical to \texttt{@Component}. The difference is semantic—\texttt{@Service} communicates intent to other developers.
+
+---
+
+\subsection{Dependency Injection (DI)}
+
+\textbf{Dependency Injection} is a design pattern where an object receives its dependencies from an external source rather than creating them itself.
+
+\textbf{Without DI:}
+\begin{lstlisting}
+public class WorkflowController {
+    private WorkflowService service = new WorkflowService(); // Bad!
+}
+\end{lstlisting}
+
+\textbf{With DI:}
+\begin{lstlisting}
+public class WorkflowController {
+    private final WorkflowService service;
+    
+    public WorkflowController(WorkflowService service) {
+        this.service = service; // Injected by Spring
+    }
+}
+\end{lstlisting}
+
+\textbf{Benefits of DI:}
+\begin{itemize}
+  \item \textbf{Loose Coupling:} Classes don't create their dependencies
+  \item \textbf{Testability:} Can inject mock objects for testing
+  \item \textbf{Flexibility:} Easy to swap implementations
+  \item \textbf{Single Responsibility:} Classes focus on their core purpose
+\end{itemize}
+
+---
+
+\subsection{Constructor Injection (Preferred Method)}
+
+Spring supports three types of dependency injection:
+\begin{enumerate}
+  \item \textbf{Constructor Injection} (Recommended)
+  \item Field Injection (using \texttt{@Autowired} on fields)
+  \item Setter Injection (using \texttt{@Autowired} on setters)
+\end{enumerate}
+
+\textbf{Constructor Injection implementation:}
+
+\begin{lstlisting}
+@RestController
+@RequestMapping("/api/workflows")
+public class WorkflowController {
+
+    private final WorkflowService workflowService;
+
+    // When there's only ONE constructor, @Autowired is optional
+    public WorkflowController(WorkflowService workflowService) {
+        this.workflowService = workflowService;
+    }
+}
+\end{lstlisting}
+
+\textbf{Why Constructor Injection is preferred:}
+\begin{itemize}
+  \item \textbf{Dependencies are Explicit:} All dependencies are visible in the constructor signature
+  \item \textbf{Required Dependencies:} Compilation fails if dependencies are missing
+  \item \textbf{Immutability:} Fields can be declared \texttt{final}
+  \item \textbf{Testability:} Easy to inject mocks in unit tests
+  \item \textbf{No Reflection:} Unlike field injection, no magic is needed
+\end{itemize}
+
+---
+
+\subsection{Thin Controller Pattern}
+
+After Phase 3, controllers became "thin"—they only handle HTTP concerns and delegate all business logic to the service layer.
+
+\textbf{Before Phase 3 (Business logic in controller):}
+\begin{lstlisting}
+@PostMapping
+public ResponseEntity<Workflow> createWorkflow(@RequestBody Workflow workflow) {
+    workflow.setId(idCounter.getAndIncrement());  // Business logic!
+    workflow.setStatus("DRAFT");                   // Business logic!
+    workflow.setCreatedAt(LocalDateTime.now());    // Business logic!
+    workflows.add(workflow);                       // Data access!
+    return ResponseEntity.status(HttpStatus.CREATED).body(workflow);
+}
+\end{lstlisting}
+
+\textbf{After Phase 3 (Thin controller):}
+\begin{lstlisting}
+@PostMapping
+public ResponseEntity<Workflow> createWorkflow(@RequestBody Workflow workflow) {
+    Workflow created = workflowService.createWorkflow(workflow);  // Delegate!
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+}
+\end{lstlisting}
+
+\textbf{Controller responsibilities (thin):}
+\begin{itemize}
+  \item Parse HTTP request
+  \item Validate input (basic)
+  \item Call appropriate service method
+  \item Return HTTP response with correct status code
+\end{itemize}
+
+\textbf{Service responsibilities:}
+\begin{itemize}
+  \item Apply business rules
+  \item Perform calculations
+  \item Coordinate operations
+  \item Interact with data layer
+\end{itemize}
+
+---
+
+\subsection{Optional for Nullable Returns}
+
+Java's \texttt{Optional} was used for methods that might not return a value:
+
+\begin{lstlisting}
+public Optional<Workflow> findById(Long id) {
+    return workflows.stream()
+            .filter(w -> w.getId().equals(id))
+            .findFirst();
+}
+\end{lstlisting}
+
+\textbf{Benefits of Optional:}
+\begin{itemize}
+  \item \textbf{Null Safety:} Prevents \texttt{NullPointerException}
+  \item \textbf{Explicit Contract:} Caller knows the value might be absent
+  \item \textbf{Fluent API:} Works well with \texttt{map()}, \texttt{orElse()}, etc.
+\end{itemize}
+
+\textbf{Using Optional in controller:}
+\begin{lstlisting}
+@GetMapping("/{id}")
+public ResponseEntity<Workflow> getWorkflowById(@PathVariable Long id) {
+    return workflowService.findById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+}
+\end{lstlisting}
+
+---
+
+\section{Implementation Details}
+
+\subsection{Files Created and Modified}
+
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{File} & \textbf{Action} & \textbf{Purpose} \\
+\hline
+\texttt{WorkflowService.java} & Created & Service layer with business logic \\
+\hline
+\texttt{WorkflowController.java} & Modified & Refactored to use service via constructor injection \\
+\hline
+\texttt{WorkflowControllerTest.java} & Modified & Added \texttt{@Import} for service dependency \\
+\hline
+\end{tabular}
+
+---
+
+\subsection{WorkflowService Implementation}
+
+\begin{lstlisting}
+@Service
+public class WorkflowService {
+    
+    private final List<Workflow> workflows = new ArrayList<>();
+    private final AtomicLong idCounter = new AtomicLong(1);
+
+    public List<Workflow> getAllWorkflows() {
+        return workflows;
+    }
+
+    public Optional<Workflow> findById(Long id) {
+        return workflows.stream()
+                .filter(w -> w.getId().equals(id))
+                .findFirst();
+    }
+
+    public Workflow createWorkflow(Workflow workflow) {
+        workflow.setId(idCounter.getAndIncrement());
+        workflow.setStatus("DRAFT");
+        workflow.setCreatedAt(LocalDateTime.now());
+        workflows.add(workflow);
+        return workflow;
+    }
+}
+\end{lstlisting}
+
+---
+
+\subsection{WorkflowController After Refactoring}
+
+\begin{lstlisting}
+@RestController
+@RequestMapping("/api/workflows")
+public class WorkflowController {
+
+    private final WorkflowService workflowService;
+
+    public WorkflowController(WorkflowService workflowService) {
+        this.workflowService = workflowService;
+    }
+
+    @GetMapping
+    public List<Workflow> getAllWorkflows() {
+        return workflowService.getAllWorkflows();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Workflow> getWorkflowById(@PathVariable Long id) {
+        return workflowService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<Workflow> createWorkflow(@RequestBody Workflow workflow) {
+        Workflow created = workflowService.createWorkflow(workflow);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+}
+\end{lstlisting}
+
+---
+
+\section{Architecture After Phase 3}
+
+\begin{verbatim}
+HTTP Request
+     |
+     v
++---------------------+
+|  WorkflowController |  <-- Handles HTTP only (thin)
+|  (@RestController)  |
++----------+----------+
+           |
+           | delegates via constructor injection
+           v
++---------------------+
+|   WorkflowService   |  <-- Business logic lives here
+|     (@Service)      |
++---------------------+
+           |
+           | (future: Phase 4)
+           v
++---------------------+
+|    Repository       |  <-- Data access (JPA - Phase 4)
+|  (@Repository)      |
++---------------------+
+\end{verbatim}
+
+---
+
+\section{Test Updates}
+
+The test class required an update because \texttt{@WebMvcTest} only loads the controller slice. Since the controller now depends on \texttt{WorkflowService}, we must explicitly import it:
+
+\begin{lstlisting}
+@WebMvcTest(WorkflowController.class)
+@Import(WorkflowService.class)  // Required after Phase 3
+class WorkflowControllerTest {
+    @Autowired
+    private MockMvc mockMvc;
+    
+    // Tests remain unchanged
+}
+\end{lstlisting}
+
+---
+
+\section{Git Commit History}
+
+The following commits were made during Phase 3:
+
+\begin{tabular}{|c|p{10cm}|}
+\hline
+\textbf{\#} & \textbf{Commit Message} \\
+\hline
+1 & \texttt{feat(workflow): add empty WorkflowService with @Service annotation} \\
+\hline
+2 & \texttt{refactor(workflow): move in-memory storage to WorkflowService} \\
+\hline
+3 & \texttt{feat(workflow): add getAllWorkflows method to service} \\
+\hline
+4 & \texttt{feat(workflow): add findById and createWorkflow to service} \\
+\hline
+5 & \texttt{refactor(workflow): inject service and delegate controller methods} \\
+\hline
+6 & \texttt{test(workflow): add @Import for WorkflowService in controller test} \\
+\hline
+\end{tabular}
+
+---
+
+\section{Verification Results}
+
+\subsection{Automated Tests}
+
+All 5 tests passed successfully:
+
+\begin{itemize}
+  \item \texttt{ArwmsApplicationTests.contextLoads()} \checkmark
+  \item \texttt{HealthControllerTest.returnsHealthStatus()} \checkmark
+  \item \texttt{WorkflowControllerTest.getAllWorkflows\_returnsEmptyListInitially()} \checkmark
+  \item \texttt{WorkflowControllerTest.createWorkflow\_returnsCreatedWorkflow()} \checkmark
+  \item \texttt{WorkflowControllerTest.getWorkflowById\_returnsNotFoundForNonExistentId()} \checkmark
+\end{itemize}
+
+---
+
+\subsection{Manual Testing}
+
+All API endpoints were verified via HTTP requests:
+
+\textbf{GET /api/workflows:}
+\begin{verbatim}
+[]
+\end{verbatim}
+
+\textbf{POST /api/workflows:}
+\begin{verbatim}
+{
+    "id": 1,
+    "title": "Test Workflow",
+    "description": "Testing Phase 3",
+    "status": "DRAFT",
+    "createdAt": "2026-02-08T00:55:55.893"
+}
+\end{verbatim}
+
+---
+
+\section{Interview Talking Points}
+
+Phase 3 provides several interview-ready concepts:
+
+\begin{enumerate}
+  \item \textbf{"Why use a service layer?"}\\
+  To separate business logic from HTTP handling, improve testability, and follow the Single Responsibility Principle.
+  
+  \item \textbf{"What is Dependency Injection?"}\\
+  A design pattern where objects receive their dependencies from an external source rather than creating them internally.
+  
+  \item \textbf{"Why prefer constructor injection over field injection?"}\\
+  Constructor injection makes dependencies explicit, allows final fields, and doesn't require reflection. It also makes the class easier to test.
+  
+  \item \textbf{"What is a thin controller?"}\\
+  A controller that only handles HTTP concerns (parsing requests, returning responses) and delegates all business logic to the service layer.
+\end{enumerate}
+
+---
+
+\section{Outcome of Phase 3}
+
+At the end of Phase 3, the project achieved:
+
+\begin{itemize}
+  \item Clean separation between HTTP handling and business logic
+  \item Proper use of Spring's \texttt{@Service} annotation
+  \item Constructor-based dependency injection
+  \item Thin controller pattern implementation
+  \item Updated tests with proper Spring context configuration
+  \item A well-structured, interview-ready architecture
+\end{itemize}
+
+---
+
+\section{Next Phase}
+
+\textbf{Phase 4 — Database and Persistence (JPA)} will focus on:
+\begin{itemize}
+  \item Relational database fundamentals
+  \item JPA and Hibernate ORM
+  \item Entity design with \texttt{@Entity}
+  \item Repository pattern with \texttt{@Repository}
+  \item Basic CRUD operations with a real database
+\end{itemize}
+
+\end{document}
