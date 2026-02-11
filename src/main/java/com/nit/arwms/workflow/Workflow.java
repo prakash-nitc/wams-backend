@@ -2,19 +2,49 @@ package com.nit.arwms.workflow;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 /**
  * Represents a workflow in the system.
  * A workflow is a multi-step process that requires approvals.
+ * 
+ * Key Concept: JPA Entity (Phase 4)
+ * ----------------------------------
+ * 
+ * @Entity — Marks this class as a JPA entity (maps to a database table)
+ * @Table — Specifies the table name (optional, defaults to class name)
+ * @Id — Marks the primary key field
+ * @GeneratedValue — Database auto-generates the ID
+ * @Column — Customizes column mapping (optional for simple cases)
+ * 
+ *         Hibernate will auto-create a "workflows" table with columns matching
+ *         these fields.
  */
+@Entity
+@Table(name = "workflows")
 public class Workflow {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String title;
+
     private String description;
+
+    @Column(nullable = false)
     private String status;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Default constructor
+    // Default constructor (required by JPA)
     public Workflow() {
     }
 
