@@ -2,16 +2,17 @@ package com.nit.arwms.workflow;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+
+import com.nit.arwms.exception.WorkflowNotFoundException;
 
 /**
  * Service layer for Workflow business logic.
  *
- * Phase 5 Update: Service now accepts WorkflowRequest DTO
- * and returns WorkflowResponse DTO, keeping a clean boundary
- * between API contracts and internal entities.
+ * Phase 6 Update: findById now throws WorkflowNotFoundException
+ * instead of returning Optional. This makes the service API cleaner
+ * and lets the global exception handler manage error responses.
  */
 @Service
 public class WorkflowService {
@@ -32,21 +33,18 @@ public class WorkflowService {
     }
 
     /**
-     * Finds a workflow by ID and converts to response DTO.
+     * Finds a workflow by ID.
+     *
+     * @throws WorkflowNotFoundException if no workflow exists with the given ID
      */
-    public Optional<WorkflowResponse> findById(Long id) {
-        return workflowRepository.findById(id)
-                .map(WorkflowResponse::fromEntity);
+    public WorkflowResponse findById(Long id) {
+        Workflow workflow = workflowRepository.findById(id)
+                .orElseThrow(() -> new WorkflowNotFoundException(id));
+        return WorkflowResponse.fromEntity(workflow);
     }
 
     /**
      * Creates a new workflow from a request DTO.
-     *
-     * Business Logic:
-     * - Converts DTO to entity
-     * - Sets initial status to DRAFT
-     * - Records creation timestamp
-     * - Persists and returns response DTO
      */
     public WorkflowResponse createWorkflow(WorkflowRequest request) {
         Workflow workflow = new Workflow();

@@ -16,10 +16,11 @@ import jakarta.validation.Valid;
 /**
  * REST Controller for Workflow operations.
  *
- * Phase 5 Update: Now uses DTOs for request/response.
- * - @RequestBody WorkflowRequest (input DTO with validation)
- * - Returns WorkflowResponse (output DTO)
- * - @Valid triggers bean validation on the request
+ * Phase 6 Update: Controller no longer handles errors directly.
+ * - findById throws WorkflowNotFoundException (caught by
+ * GlobalExceptionHandler)
+ * - Validation errors caught by GlobalExceptionHandler
+ * - Controller stays thin — no try/catch or error logic here
  */
 @RestController
 @RequestMapping("/api/workflows")
@@ -41,20 +42,20 @@ public class WorkflowController {
 
     /**
      * GET /api/workflows/{id} - Get workflow by ID
+     *
+     * No error handling here — if not found, WorkflowNotFoundException
+     * is thrown and GlobalExceptionHandler returns a proper 404 response.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<WorkflowResponse> getWorkflowById(@PathVariable Long id) {
-        return workflowService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public WorkflowResponse getWorkflowById(@PathVariable Long id) {
+        return workflowService.findById(id);
     }
 
     /**
      * POST /api/workflows - Create a new workflow
      *
-     * @Valid triggers validation annotations on WorkflowRequest
-     *        (e.g., @NotBlank, @Size). If validation fails, Spring returns 400 Bad
-     *        Request.
+     * @Valid triggers validation. On failure, MethodArgumentNotValidException
+     *        is thrown and GlobalExceptionHandler returns a proper 400 response.
      */
     @PostMapping
     public ResponseEntity<WorkflowResponse> createWorkflow(@Valid @RequestBody WorkflowRequest request) {

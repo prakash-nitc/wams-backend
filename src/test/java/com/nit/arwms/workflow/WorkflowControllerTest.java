@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +18,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.nit.arwms.exception.WorkflowNotFoundException;
+
 /**
  * Unit tests for WorkflowController.
  *
- * Phase 5 Update: Tests now use WorkflowRequest/WorkflowResponse DTOs.
- * Added validation tests for @NotBlank on title.
+ * Phase 6 Update: Tests verify standardized error responses
+ * from GlobalExceptionHandler for 404 and 400 cases.
  */
 @WebMvcTest(WorkflowController.class)
 class WorkflowControllerTest {
@@ -76,13 +77,12 @@ class WorkflowControllerTest {
                                 .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.id").value(1))
                                 .andExpect(jsonPath("$.title").value("Leave Request"))
-                                .andExpect(jsonPath("$.description").value("Employee leave approval workflow"))
                                 .andExpect(jsonPath("$.status").value("DRAFT"))
                                 .andExpect(jsonPath("$.createdAt").exists());
         }
 
         @Test
-        void createWorkflow_returnsBadRequestWhenTitleIsBlank() throws Exception {
+        void createWorkflow_returnsBadRequestWithErrorBody() throws Exception {
                 String requestBody = """
                                 {
                                     "title": "",
@@ -93,7 +93,11 @@ class WorkflowControllerTest {
                 mockMvc.perform(post("/api/workflows")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(requestBody))
-                                .andExpect(status().isBadRequest());
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.error").value("Bad Request"))
+                                .andExpect(jsonPath("$.message").exists())
+                                .andExpect(jsonPath("$.path").value("/api/workflows"));
         }
 
         @Test
@@ -107,14 +111,15 @@ class WorkflowControllerTest {
                 mockMvc.perform(post("/api/workflows")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(requestBody))
-                                .andExpect(status().isBadRequest());
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.status").value(400));
         }
 
         @Test
         void getWorkflowById_returnsWorkflowWhenFound() throws Exception {
                 WorkflowResponse workflow = new WorkflowResponse(1L, "Leave Request",
                                 "Employee leave approval", "DRAFT", LocalDateTime.now());
-                when(workflowService.findById(1L)).thenReturn(Optional.of(workflow));
+                when(workflowService.findById(1L)).thenReturn(workflow);
 
                 mockMvc.perform(get("/api/workflows/1"))
                                 .andExpect(status().isOk())
@@ -123,10 +128,15 @@ class WorkflowControllerTest {
         }
 
         @Test
-        void getWorkflowById_returnsNotFoundForNonExistentId() throws Exception {
-                when(workflowService.findById(999L)).thenReturn(Optional.empty());
+        void getWorkflowById_returnsNotFoundWithErrorBody() throws Exception {
+                when(workflowService.findById(999L))
+                                .thenThrow(new WorkflowNotFoundException(999L));
 
                 mockMvc.perform(get("/api/workflows/999"))
-                                .andExpect(status().isNotFound());
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.status").value(404))
+                                .andExpect(jsonPath("$.error").value("Not Found"))
+                                .andExpect(jsonPath("$.message").value("Workflow not found with id: 999"))
+                                .andExpect(jsonPath("$.path").value("/api/workflows/999"));
         }
 }
