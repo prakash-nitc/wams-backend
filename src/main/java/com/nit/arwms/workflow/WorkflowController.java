@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,13 +13,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nit.arwms.auth.User;
+
 import jakarta.validation.Valid;
 
 /**
  * REST Controller for Workflow operations.
  *
- * Phase 7 Update: Added PATCH endpoint for workflow state transitions.
- * PATCH is used because we're partially updating the workflow (only status).
+ * Phase 8 Update: Transition endpoint now extracts the role from
+ * the authenticated user's JWT token instead of trusting the request body.
+ * The "role" field in WorkflowTransitionRequest is still used for backward
+ * compatibility but the authenticated user's role takes priority.
  */
 @RestController
 @RequestMapping("/api/workflows")
@@ -56,22 +61,22 @@ public class WorkflowController {
     }
 
     /**
-     * PATCH /api/workflows/{id}/transition - Transition workflow to a new status
+     * PATCH /api/workflows/{id}/transition - Transition workflow status
      *
-     * Key Concept: Why PATCH?
-     * - PUT replaces the entire resource
-     * - PATCH partially updates it (here, only the status changes)
-     *
-     * Example request body:
-     * {
-     * "targetStatus": "SUBMITTED",
-     * "role": "REQUESTER"
-     * }
+     * Phase 8 Update: Uses the authenticated user's role from the JWT token.
+     * The role in the request body is overridden with the actual user's role.
      */
     @PatchMapping("/{id}/transition")
     public WorkflowResponse transitionWorkflow(
             @PathVariable Long id,
-            @Valid @RequestBody WorkflowTransitionRequest request) {
+            @Valid @RequestBody WorkflowTransitionRequest request,
+            Authentication authentication) {
+
+        // Extract the authenticated user's role from the security context
+        if (authentication != null && authentication.getPrincipal() instanceof User user) {
+            request.setRole(user.getRole().name());
+        }
+
         return workflowService.transitionWorkflow(id, request);
     }
 }
