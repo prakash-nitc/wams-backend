@@ -5,16 +5,8 @@ import java.time.LocalDateTime;
 /**
  * DTO for workflow API responses.
  *
- * Key Concept: Why a separate response DTO?
- * -------------------------------------------
- * 1. Controls exactly what data the client sees
- * 2. Prevents leaking internal fields (e.g., password hashes, DB internals)
- * 3. Allows formatting or renaming fields without touching the entity
- * 4. Can combine data from multiple entities into one response
- *
- * Using Java Record (immutable, concise):
- * - Automatically generates constructor, getters, equals, hashCode, toString
- * - Records are ideal for DTOs because they are read-only data carriers
+ * Phase 7 Update: Status is now a String representation of WorkflowStatus enum.
+ * The API still returns a string (e.g., "DRAFT"), keeping the contract simple.
  */
 public record WorkflowResponse(
         Long id,
@@ -25,16 +17,14 @@ public record WorkflowResponse(
 
     /**
      * Factory method to convert a Workflow entity to a response DTO.
-     *
-     * Key Concept: Entity → DTO Conversion
-     * This keeps the conversion logic in one place.
+     * Converts the enum status to its string name for the API.
      */
     public static WorkflowResponse fromEntity(Workflow workflow) {
         return new WorkflowResponse(
                 workflow.getId(),
                 workflow.getTitle(),
                 workflow.getDescription(),
-                workflow.getStatus(),
+                workflow.getStatus().name(),
                 workflow.getCreatedAt());
     }
 }

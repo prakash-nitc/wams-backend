@@ -4,26 +4,22 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * Represents a workflow in the system.
- * A workflow is a multi-step process that requires approvals.
- * 
- * Key Concept: JPA Entity (Phase 4)
- * ----------------------------------
- * 
- * @Entity — Marks this class as a JPA entity (maps to a database table)
- * @Table — Specifies the table name (optional, defaults to class name)
- * @Id — Marks the primary key field
- * @GeneratedValue — Database auto-generates the ID
- * @Column — Customizes column mapping (optional for simple cases)
- * 
- *         Hibernate will auto-create a "workflows" table with columns matching
- *         these fields.
+ * JPA Entity representing a workflow in the system.
+ *
+ * Phase 7 Update: Status is now a WorkflowStatus enum
+ * stored as a STRING in the database (e.g., "DRAFT", "APPROVED").
+ *
+ * @Enumerated(EnumType.STRING) stores the enum name as text,
+ *                              making the database readable and safe from enum
+ *                              reordering bugs.
  */
 @Entity
 @Table(name = "workflows")
@@ -38,8 +34,9 @@ public class Workflow {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private WorkflowStatus status;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -49,7 +46,7 @@ public class Workflow {
     }
 
     // Constructor with all fields
-    public Workflow(Long id, String title, String description, String status, LocalDateTime createdAt) {
+    public Workflow(Long id, String title, String description, WorkflowStatus status, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -82,11 +79,11 @@ public class Workflow {
         this.description = description;
     }
 
-    public String getStatus() {
+    public WorkflowStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(WorkflowStatus status) {
         this.status = status;
     }
 

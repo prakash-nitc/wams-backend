@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,11 +17,8 @@ import jakarta.validation.Valid;
 /**
  * REST Controller for Workflow operations.
  *
- * Phase 6 Update: Controller no longer handles errors directly.
- * - findById throws WorkflowNotFoundException (caught by
- * GlobalExceptionHandler)
- * - Validation errors caught by GlobalExceptionHandler
- * - Controller stays thin — no try/catch or error logic here
+ * Phase 7 Update: Added PATCH endpoint for workflow state transitions.
+ * PATCH is used because we're partially updating the workflow (only status).
  */
 @RestController
 @RequestMapping("/api/workflows")
@@ -42,9 +40,6 @@ public class WorkflowController {
 
     /**
      * GET /api/workflows/{id} - Get workflow by ID
-     *
-     * No error handling here — if not found, WorkflowNotFoundException
-     * is thrown and GlobalExceptionHandler returns a proper 404 response.
      */
     @GetMapping("/{id}")
     public WorkflowResponse getWorkflowById(@PathVariable Long id) {
@@ -53,13 +48,30 @@ public class WorkflowController {
 
     /**
      * POST /api/workflows - Create a new workflow
-     *
-     * @Valid triggers validation. On failure, MethodArgumentNotValidException
-     *        is thrown and GlobalExceptionHandler returns a proper 400 response.
      */
     @PostMapping
     public ResponseEntity<WorkflowResponse> createWorkflow(@Valid @RequestBody WorkflowRequest request) {
         WorkflowResponse created = workflowService.createWorkflow(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /**
+     * PATCH /api/workflows/{id}/transition - Transition workflow to a new status
+     *
+     * Key Concept: Why PATCH?
+     * - PUT replaces the entire resource
+     * - PATCH partially updates it (here, only the status changes)
+     *
+     * Example request body:
+     * {
+     * "targetStatus": "SUBMITTED",
+     * "role": "REQUESTER"
+     * }
+     */
+    @PatchMapping("/{id}/transition")
+    public WorkflowResponse transitionWorkflow(
+            @PathVariable Long id,
+            @Valid @RequestBody WorkflowTransitionRequest request) {
+        return workflowService.transitionWorkflow(id, request);
     }
 }
