@@ -226,3 +226,128 @@ All errors follow a consistent format:
 | `404` | Resource not found |
 | `409` | Invalid state transition or duplicate username |
 | `500` | Unexpected server error |
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Java 17** — [Download](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
+- **Maven 3.8+** — or use the included Maven Wrapper (`./mvnw`)
+
+### Run the Application
+
+```bash
+# Clone the repository
+git clone https://github.com/prakash-nitc/wams-backend.git
+cd wams-backend
+
+# Run (Maven Wrapper — no Maven install required)
+./mvnw spring-boot:run
+
+# Or on Windows
+.\mvnw spring-boot:run
+```
+
+The server starts at **http://localhost:8080**
+
+### Run Tests
+
+```bash
+./mvnw test
+```
+
+### Quick Test with cURL
+
+```bash
+# 1. Register a user
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"secret123","role":"REQUESTER"}'
+
+# 2. Use the returned token for authenticated requests
+curl http://localhost:8080/api/workflows \
+  -H "Authorization: Bearer <your-token>"
+
+# 3. Create a workflow
+curl -X POST http://localhost:8080/api/workflows \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your-token>" \
+  -d '{"title":"Leave Request","description":"Annual leave approval"}'
+```
+
+### H2 Database Console
+
+Access the in-memory database browser at: **http://localhost:8080/h2-console**
+
+| Setting | Value |
+|---------|-------|
+| JDBC URL | `jdbc:h2:mem:wams` |
+| Username | `sa` |
+| Password | *(empty)* |
+
+## 📁 Project Structure
+
+```
+src/main/java/com/nit/arwms/
+├── ArwmsApplication.java              # Spring Boot entry point
+│
+├── auth/                              # 🔐 Authentication & Security
+│   ├── Role.java                      # Enum: REQUESTER, REVIEWER, APPROVER
+│   ├── User.java                      # JPA Entity + UserDetails
+│   ├── UserRepository.java            # Spring Data repository
+│   ├── JwtService.java                # JWT token generation & validation
+│   ├── JwtAuthenticationFilter.java   # Per-request JWT filter
+│   ├── SecurityConfig.java            # Security filter chain + BCrypt
+│   ├── AuthController.java            # POST /api/auth/register, /login
+│   ├── AuthRequest.java               # Login DTO
+│   ├── AuthResponse.java              # Token response DTO
+│   └── RegisterRequest.java           # Registration DTO
+│
+├── workflow/                          # ⚙️ Core Workflow Engine
+│   ├── Workflow.java                  # JPA Entity
+│   ├── WorkflowStatus.java            # State machine enum
+│   ├── WorkflowRepository.java        # Spring Data repository
+│   ├── WorkflowService.java           # Business logic + transitions
+│   ├── WorkflowController.java        # REST endpoints
+│   ├── WorkflowRequest.java           # Create workflow DTO
+│   ├── WorkflowResponse.java          # Response DTO (record)
+│   └── WorkflowTransitionRequest.java # Transition DTO
+│
+├── exception/                         # 🛡️ Error Handling
+│   ├── GlobalExceptionHandler.java    # @RestControllerAdvice
+│   ├── ErrorResponse.java             # Standardized error format
+│   ├── WorkflowNotFoundException.java # 404 exception
+│   └── InvalidTransitionException.java# 409 exception
+│
+└── system/                            # ❤️ System
+    ├── HealthController.java          # GET /api/health
+    └── HealthResponse.java            # Health check DTO
+```
+
+## 📋 Development Phases
+
+This project was built incrementally, phase by phase:
+
+| Phase | Topic | Status |
+|-------|-------|--------|
+| 1 | Project Setup (Spring Initializr) | ✅ |
+| 2 | REST API Fundamentals | ✅ |
+| 3 | Service Layer Pattern | ✅ |
+| 4 | Database Persistence (JPA) | ✅ |
+| 5 | DTOs & API Design | ✅ |
+| 6 | Exception Handling | ✅ |
+| 7 | Core Workflow Logic (State Machine) | ✅ |
+| 8 | Security (JWT + RBAC) | ✅ |
+| 9 | Docker | 🔲 |
+
+Detailed documentation for each phase is available in the [`docs/`](docs/) directory.
+
+## 📄 License
+
+This project is for educational purposes as part of the NIT Calicut curriculum.
+
+---
+
+<p align="center">
+  Built with ☕ and Spring Boot
+</p>
