@@ -37,3 +37,192 @@
 | **Validation** | Jakarta Bean Validation |
 | **Build** | Maven |
 | **Testing** | JUnit 5, Mockito, Spring Security Test |
+
+## 🏛️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Client (REST)                            │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ HTTP + JWT Bearer Token
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  JwtAuthenticationFilter  │  SecurityConfig (Filter Chain)      │
+│  Extract & validate JWT   │  Endpoint authorization rules       │
+└──────────────────────────┬──────────────────────────────────────┘
+                           ▼
+┌──────────────────┐  ┌──────────────────┐  ┌────────────────────┐
+│  AuthController  │  │ WorkflowController│  │  HealthController  │
+│  /api/auth/*     │  │  /api/workflows/* │  │  /api/health       │
+└────────┬─────────┘  └────────┬─────────┘  └────────────────────┘
+         │                     │
+         ▼                     ▼
+┌──────────────────┐  ┌──────────────────┐
+│   JwtService     │  │ WorkflowService  │  ← Business Logic
+│   PasswordEncoder│  │ State Machine    │
+└────────┬─────────┘  └────────┬─────────┘
+         │                     │
+         ▼                     ▼
+┌──────────────────┐  ┌──────────────────┐
+│  UserRepository  │  │WorkflowRepository│  ← Spring Data JPA
+└────────┬─────────┘  └────────┬─────────┘
+         │                     │
+         ▼                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    H2 / MySQL Database                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 🔄 Workflow State Machine
+
+Workflows follow a strict state machine with role-based transitions:
+
+```
+DRAFT ──(REQUESTER)──▶ SUBMITTED ──(REVIEWER)──▶ UNDER_REVIEW
+                                                       │
+                                             ┌─────────┴─────────┐
+                                        (APPROVER)          (APPROVER)
+                                             ▼                   ▼
+                                         APPROVED            REJECTED
+```
+
+| Transition | Required Role | HTTP Status on Failure |
+|-----------|---------------|----------------------|
+| DRAFT → SUBMITTED | `REQUESTER` | 409 Conflict |
+| SUBMITTED → UNDER_REVIEW | `REVIEWER` | 409 Conflict |
+| UNDER_REVIEW → APPROVED | `APPROVER` | 409 Conflict |
+| UNDER_REVIEW → REJECTED | `APPROVER` | 409 Conflict |
+
+## 📡 API Reference
+
+### Authentication
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/api/auth/register` | Register a new user | Public |
+| `POST` | `/api/auth/login` | Login and receive JWT | Public |
+
+<details>
+<summary><b>POST /api/auth/register</b></summary>
+
+**Request:**
+```json
+{
+  "username": "john_doe",
+  "password": "secret123",
+  "role": "REQUESTER"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "username": "john_doe",
+  "role": "REQUESTER"
+}
+```
+</details>
+
+<details>
+<summary><b>POST /api/auth/login</b></summary>
+
+**Request:**
+```json
+{
+  "username": "john_doe",
+  "password": "secret123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "username": "john_doe",
+  "role": "REQUESTER"
+}
+```
+</details>
+
+### Workflows
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/workflows` | List all workflows | JWT |
+| `GET` | `/api/workflows/{id}` | Get workflow by ID | JWT |
+| `POST` | `/api/workflows` | Create new workflow | JWT |
+| `PATCH` | `/api/workflows/{id}/transition` | Transition workflow status | JWT |
+
+<details>
+<summary><b>POST /api/workflows</b></summary>
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "title": "Leave Request",
+  "description": "Employee leave approval workflow"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "title": "Leave Request",
+  "description": "Employee leave approval workflow",
+  "status": "DRAFT",
+  "createdAt": "2026-02-25T20:00:00"
+}
+```
+</details>
+
+<details>
+<summary><b>PATCH /api/workflows/{id}/transition</b></summary>
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "targetStatus": "SUBMITTED",
+  "role": "REQUESTER"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "title": "Leave Request",
+  "description": "Employee leave approval workflow",
+  "status": "SUBMITTED",
+  "createdAt": "2026-02-25T20:00:00"
+}
+```
+</details>
+
+### Error Responses
+
+All errors follow a consistent format:
+
+```json
+{
+  "timestamp": "2026-02-25T20:00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Workflow not found with id: 42",
+  "path": "/api/workflows/42"
+}
+```
+
+| Status | Meaning |
+|--------|---------|
+| `400` | Validation failure (missing/invalid fields) |
+| `401` | Invalid credentials (login) |
+| `403` | Missing or invalid JWT token |
+| `404` | Resource not found |
+| `409` | Invalid state transition or duplicate username |
+| `500` | Unexpected server error |
