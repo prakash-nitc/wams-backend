@@ -1,15 +1,22 @@
 # 🔄 WAMS — Workflow & Approval Management System
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17"/>
-  <img src="https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot"/>
-  <img src="https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white" alt="Maven"/>
-  <img src="https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT"/>
-  <img src="https://img.shields.io/badge/H2-Database-003545?style=for-the-badge" alt="H2"/>
+  <a href="https://github.com/prakash-nitc/wams-backend/actions/workflows/ci.yml">
+    <img src="https://github.com/prakash-nitc/wams-backend/actions/workflows/ci.yml/badge.svg" alt="CI"/>
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
+  </a>
+  <img src="https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=openjdk&logoColor=white" alt="Java 17"/>
+  <img src="https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?style=flat-square&logo=spring-boot&logoColor=white" alt="Spring Boot"/>
+  <img src="https://img.shields.io/badge/Maven-C71A36?style=flat-square&logo=apache-maven&logoColor=white" alt="Maven"/>
+  <img src="https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens&logoColor=white" alt="JWT"/>
+  <img src="https://img.shields.io/badge/H2%20%7C%20MySQL-Database-003545?style=flat-square" alt="Database"/>
 </p>
 
 <p align="center">
-  A production-grade backend system for managing multi-step approval workflows with role-based access control, JWT authentication, and a state-machine driven workflow engine.
+  A production-grade REST API backend for managing multi-step approval workflows.<br/>
+  Built with <strong>Java 17 + Spring Boot 3.5</strong> — featuring JWT authentication, role-based access control, and a state-machine driven workflow engine.
 </p>
 
 ---
@@ -24,6 +31,26 @@
 - **📦 DTO Pattern** — Clean separation between API contracts and internal entities
 - **🗄️ JPA Persistence** — Database-backed storage with H2 (dev) / MySQL (prod)
 - **🧪 Comprehensive Tests** — 13 unit tests with MockMvc and Spring Security Test
+
+## 🎯 Skills Demonstrated
+
+> **For recruiters:** This project showcases the following back-end engineering skills used in real-world, enterprise Java development.
+
+| Skill Area | What's Implemented |
+|------------|-------------------|
+| **REST API Design** | Clean resource-oriented endpoints, proper HTTP verbs & status codes |
+| **Authentication & Security** | Stateless JWT auth, BCrypt hashing, Spring Security filter chain |
+| **Authorization (RBAC)** | Three distinct roles with per-operation enforcement |
+| **Domain Modelling** | Finite-state machine with explicit, validated transitions |
+| **Data Persistence** | Spring Data JPA / Hibernate; H2 (dev) → MySQL (prod) swap |
+| **Input Validation** | Jakarta Bean Validation on all request DTOs |
+| **Error Handling** | Global `@RestControllerAdvice` with structured JSON error responses |
+| **Clean Architecture** | Controller → Service → Repository layers; DTO pattern throughout |
+| **Testing** | 13+ integration tests with MockMvc, Mockito & Spring Security Test |
+| **CI / CD** | GitHub Actions pipeline — builds and tests on every push |
+| **Build Tooling** | Maven + Maven Wrapper (no local install needed) |
+
+---
 
 ## 🏗️ Tech Stack
 
@@ -344,10 +371,10 @@ Detailed documentation for each phase is available in the [`docs/`](docs/) direc
 
 ## 📄 License
 
-This project is for educational purposes as part of the NIT Calicut curriculum.
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
 <p align="center">
-  Built with ☕ and Spring Boot
+  Built with ☕ and Spring Boot &nbsp;|&nbsp; <a href="https://github.com/prakash-nitc/wams-backend/actions">CI Status</a>
 </p>
